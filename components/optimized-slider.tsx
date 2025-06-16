@@ -1,6 +1,6 @@
 "use client"
 
-import { memo, useCallback } from "react"
+import { memo } from "react"
 import { Slider } from "@/components/ui/slider"
 
 interface OptimizedSliderProps {
@@ -8,8 +8,6 @@ interface OptimizedSliderProps {
   value: number
   min: number
   max: number
-  step?: number
-  suffix?: string
   onChange: (value: number) => void
   className?: string
 }
@@ -19,25 +17,22 @@ const OptimizedSlider = memo(function OptimizedSlider({
   value,
   min,
   max,
-  step = 1,
-  suffix = "px",
   onChange,
   className = "",
 }: OptimizedSliderProps) {
-  const handleChange = useCallback(
-    (newValue: number[]) => {
-      onChange(newValue[0])
-    },
-    [onChange],
-  )
-
   return (
     <div className={className}>
-      <label className="block mb-2 text-black font-medium text-sm">
-        {label}: {value}
-        {suffix}
+      <label className="block mb-2 text-foreground font-medium text-sm">
+        {label}: {value}px
       </label>
-      <Slider value={[value]} onValueChange={handleChange} max={max} min={min} step={step} className="w-full" />
+      <Slider
+        value={[value]}
+        onValueChange={(values) => onChange(values[0])}
+        min={min}
+        max={max}
+        step={1}
+        className="w-full"
+      />
     </div>
   )
 })

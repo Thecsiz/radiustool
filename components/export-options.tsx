@@ -1,7 +1,8 @@
 "use client"
 
+import { memo, useMemo } from "react"
 import { Button } from "@/components/ui/button"
-import { Copy } from "lucide-react"
+import { Copy, Check } from "lucide-react"
 import { useState } from "react"
 
 interface ExportOptionsProps {
@@ -11,176 +12,153 @@ interface ExportOptionsProps {
   dimension: number
 }
 
-export function ExportOptions({ borderRadius, padding, innerRadius, dimension }: ExportOptionsProps) {
-  const [copiedFormat, setCopiedFormat] = useState<string | null>(null)
+const ExportOptions = memo(function ExportOptions({
+  borderRadius,
+  padding,
+  innerRadius,
+  dimension,
+}: ExportOptionsProps) {
+  const [copiedItem, setCopiedItem] = useState<string | null>(null)
 
-  const copyToClipboard = async (text: string, format: string) => {
-    await navigator.clipboard.writeText(text)
-    setCopiedFormat(format)
-    setTimeout(() => setCopiedFormat(null), 2000)
-  }
-
-  const formats = {
-    css: `/* CSS */
+  // Memoize export formats
+  const exportFormats = useMemo(
+    () => ({
+      css: `/* Outer Container */
 .outer-container {
-  width: ${dimension}px;
-  height: ${dimension}px;
   border-radius: ${borderRadius}px;
   padding: ${padding}px;
-  border: 4px solid #d1d5db;
-  background: #f9fafb;
+  width: ${dimension}px;
+  height: ${dimension}px;
 }
 
+/* Inner Container */
 .inner-container {
-  width: 100%;
-  height: 100%;
   border-radius: ${innerRadius}px;
-  border: 4px solid #93c5fd;
-  background: #dbeafe;
 }`,
-
-    scss: `// SCSS Variables
+      scss: `// Border Radius Variables
 $outer-radius: ${borderRadius}px;
 $padding: ${padding}px;
 $inner-radius: ${innerRadius}px;
 $dimension: ${dimension}px;
 
 .outer-container {
-  width: $dimension;
-  height: $dimension;
   border-radius: $outer-radius;
   padding: $padding;
-  border: 4px solid #d1d5db;
-  background: #f9fafb;
+  width: $dimension;
+  height: $dimension;
 }
 
 .inner-container {
-  width: 100%;
-  height: 100%;
   border-radius: $inner-radius;
-  border: 4px solid #93c5fd;
-  background: #dbeafe;
 }`,
-
-    tailwind: `<!-- Tailwind Classes -->
-<div class="border-4 border-gray-300 bg-gray-50" 
-     style="width: ${dimension}px; height: ${dimension}px; border-radius: ${borderRadius}px; padding: ${padding}px;">
-  <div class="w-full h-full border-4 border-blue-300 bg-blue-100" 
-       style="border-radius: ${innerRadius}px;">
+      tailwind: `<!-- Outer Container -->
+<div class="rounded-[${borderRadius}px] p-[${padding}px] w-[${dimension}px] h-[${dimension}px]">
+  <!-- Inner Container -->
+  <div class="rounded-[${innerRadius}px]">
+    <!-- Content -->
   </div>
 </div>`,
-
-    cssInJs: `// CSS-in-JS (styled-components/emotion)
-const OuterContainer = styled.div\`
-  width: ${dimension}px;
-  height: ${dimension}px;
-  border-radius: ${borderRadius}px;
-  padding: ${padding}px;
-  border: 4px solid #d1d5db;
-  background: #f9fafb;
-\`;
-
-const InnerContainer = styled.div\`
-  width: 100%;
-  height: 100%;
-  border-radius: ${innerRadius}px;
-  border: 4px solid #93c5fd;
-  background: #dbeafe;
-\`;`,
-
-    designTokens: `{
+      cssInJs: `const styles = {
+  outerContainer: {
+    borderRadius: '${borderRadius}px',
+    padding: '${padding}px',
+    width: '${dimension}px',
+    height: '${dimension}px',
+  },
+  innerContainer: {
+    borderRadius: '${innerRadius}px',
+  },
+}`,
+      designTokens: `{
   "border-radius": {
-    "outer": {
-      "value": "${borderRadius}px",
-      "type": "borderRadius"
-    },
-    "inner": {
-      "value": "${innerRadius}px",
-      "type": "borderRadius"
-    }
+    "outer": "${borderRadius}px",
+    "inner": "${innerRadius}px"
   },
   "spacing": {
-    "padding": {
-      "value": "${padding}px",
-      "type": "spacing"
-    }
+    "padding": "${padding}px"
   },
-  "sizing": {
-    "dimension": {
-      "value": "${dimension}px",
-      "type": "sizing"
-    }
+  "size": {
+    "dimension": "${dimension}px"
   }
 }`,
-
-    swift: `// Swift (iOS)
+      swift: `// iOS/Swift
 let outerRadius: CGFloat = ${borderRadius}
 let padding: CGFloat = ${padding}
 let innerRadius: CGFloat = ${innerRadius}
 let dimension: CGFloat = ${dimension}
 
-outerView.layer.cornerRadius = outerRadius
-outerView.layer.borderWidth = 4
-outerView.layer.borderColor = UIColor.systemGray3.cgColor
+// Usage
+view.layer.cornerRadius = outerRadius
+view.layoutMargins = UIEdgeInsets(top: padding, left: padding, bottom: padding, right: padding)
+innerView.layer.cornerRadius = innerRadius`,
+    }),
+    [borderRadius, padding, innerRadius, dimension],
+  )
 
-innerView.layer.cornerRadius = innerRadius
-innerView.layer.borderWidth = 4
-innerView.layer.borderColor = UIColor.systemBlue.cgColor`,
+  const copyToClipboard = async (text: string, format: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopiedItem(format)
+      setTimeout(() => setCopiedItem(null), 2000)
+    } catch (err) {
+      console.error("Failed to copy text: ", err)
+    }
   }
 
+  const quickCopyValues = useMemo(
+    () => [
+      { label: "Outer Radius", value: `${borderRadius}px`, key: "outer" },
+      { label: "Padding", value: `${padding}px`, key: "padding" },
+      { label: "Inner Radius", value: `${innerRadius}px`, key: "inner" },
+    ],
+    [borderRadius, padding, innerRadius],
+  )
+
   return (
-    <div className="space-y-4">
-      <h3 className="font-semibold text-sm">Export Options</h3>
-
-      {/* Quick Copy Values */}
-      <div className="grid grid-cols-3 gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          className="text-xs"
-          onClick={() => copyToClipboard(`${borderRadius}px`, "outer")}
-        >
-          {copiedFormat === "outer" ? "✓" : <Copy className="w-3 h-3" />}
-          Outer: {borderRadius}px
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          className="text-xs"
-          onClick={() => copyToClipboard(`${padding}px`, "padding")}
-        >
-          {copiedFormat === "padding" ? "✓" : <Copy className="w-3 h-3" />}
-          Padding: {padding}px
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          className="text-xs"
-          onClick={() => copyToClipboard(`${innerRadius}px`, "inner")}
-        >
-          {copiedFormat === "inner" ? "✓" : <Copy className="w-3 h-3" />}
-          Inner: {innerRadius}px
-        </Button>
-      </div>
-
-      {/* Format Export Buttons */}
-      <div className="space-y-2">
-        <h4 className="text-xs font-medium text-gray-600">Export Formats</h4>
-        <div className="grid grid-cols-2 gap-2">
-          {Object.entries(formats).map(([format, code]) => (
+    <div className="space-y-6">
+      <div>
+        <h3 className="font-semibold text-sm mb-4">Quick Copy Values</h3>
+        <div className="grid grid-cols-1 gap-2">
+          {quickCopyValues.map((item) => (
             <Button
-              key={format}
+              key={item.key}
               variant="outline"
               size="sm"
-              className="text-xs justify-start"
-              onClick={() => copyToClipboard(code, format)}
+              className="justify-between h-auto p-3"
+              onClick={() => copyToClipboard(item.value, item.key)}
             >
-              {copiedFormat === format ? "✓ Copied!" : <Copy className="w-3 h-3 mr-1" />}
-              {format.toUpperCase()}
+              <div className="text-left">
+                <div className="font-medium text-xs">{item.label}</div>
+                <div className="text-xs text-muted-foreground">{item.value}</div>
+              </div>
+              {copiedItem === item.key ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
             </Button>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <h3 className="font-semibold text-sm mb-4">Export Formats</h3>
+        <div className="space-y-3">
+          {Object.entries(exportFormats).map(([format, code]) => (
+            <div key={format} className="space-y-2">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  {format === "cssInJs" ? "CSS-in-JS" : format}
+                </h4>
+                <Button variant="ghost" size="sm" onClick={() => copyToClipboard(code, format)} className="h-6 px-2">
+                  {copiedItem === format ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+                </Button>
+              </div>
+              <pre className="text-xs bg-muted p-3 rounded-md overflow-x-auto border">
+                <code>{code}</code>
+              </pre>
+            </div>
           ))}
         </div>
       </div>
     </div>
   )
-}
+})
+
+export { ExportOptions }

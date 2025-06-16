@@ -33,9 +33,9 @@ const OptimizedRealWorldExamples = memo(function OptimizedRealWorldExamples({
       <div className="grid grid-cols-2 gap-3">
         {/* Button Example */}
         <div className="space-y-2">
-          <p className="text-xs text-gray-600">Button</p>
+          <p className="text-xs text-muted-foreground">Button</p>
           <button
-            className="bg-blue-500 text-white text-sm font-medium hover:bg-blue-600 border-2 border-blue-600 example-button"
+            className="bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 border-2 border-primary example-button transition-all duration-150"
             style={{
               borderRadius: `var(--example-radius)`,
               padding: `var(--example-padding)`,
@@ -47,9 +47,9 @@ const OptimizedRealWorldExamples = memo(function OptimizedRealWorldExamples({
 
         {/* Card Example */}
         <div className="space-y-2">
-          <p className="text-xs text-gray-600">Card</p>
+          <p className="text-xs text-muted-foreground">Card</p>
           <div
-            className="bg-white border-2 border-gray-200 shadow-sm example-card"
+            className="bg-card border-2 border-border shadow-sm example-card transition-all duration-150"
             style={{
               borderRadius: `var(--example-radius)`,
               padding: `var(--card-padding)`,
@@ -58,7 +58,7 @@ const OptimizedRealWorldExamples = memo(function OptimizedRealWorldExamples({
             }}
           >
             <div
-              className="bg-gray-100 border border-gray-300 h-full flex items-center justify-center text-xs text-gray-600 example-card-content"
+              className="bg-muted border border-border h-full flex items-center justify-center text-xs text-muted-foreground example-card-content transition-all duration-150"
               style={{ borderRadius: `var(--example-inner-radius)` }}
             >
               Content
@@ -68,16 +68,16 @@ const OptimizedRealWorldExamples = memo(function OptimizedRealWorldExamples({
 
         {/* Input Field Example */}
         <div className="space-y-2">
-          <p className="text-xs text-gray-600">Input Field</p>
+          <p className="text-xs text-muted-foreground">Input Field</p>
           <div
-            className="bg-white border-2 border-gray-300 example-input-container"
+            className="bg-background border-2 border-input example-input-container transition-all duration-150"
             style={{
               borderRadius: `var(--example-radius)`,
               padding: `var(--input-padding)`,
             }}
           >
             <input
-              className="w-full bg-gray-50 border border-gray-200 px-2 py-1 text-xs example-input"
+              className="w-full bg-muted border border-border px-2 py-1 text-xs text-foreground placeholder:text-muted-foreground example-input transition-all duration-150"
               style={{ borderRadius: `var(--example-inner-radius)` }}
               placeholder="Enter text..."
               readOnly
@@ -87,9 +87,9 @@ const OptimizedRealWorldExamples = memo(function OptimizedRealWorldExamples({
 
         {/* Alert/Toast Example */}
         <div className="space-y-2">
-          <p className="text-xs text-gray-600">Alert</p>
+          <p className="text-xs text-muted-foreground">Alert</p>
           <div
-            className="bg-green-50 border-2 border-green-200 example-alert"
+            className="bg-green-50 dark:bg-green-950/30 border-2 border-green-200 dark:border-green-800 example-alert transition-all duration-150"
             style={{
               borderRadius: `var(--example-radius)`,
               padding: `var(--card-padding)`,
@@ -97,7 +97,7 @@ const OptimizedRealWorldExamples = memo(function OptimizedRealWorldExamples({
             }}
           >
             <div
-              className="bg-green-100 border border-green-300 px-2 py-1 text-xs text-green-800 example-alert-content"
+              className="bg-green-100 dark:bg-green-900/50 border border-green-300 dark:border-green-700 px-2 py-1 text-xs text-green-800 dark:text-green-200 example-alert-content transition-all duration-150"
               style={{ borderRadius: `var(--example-inner-radius)` }}
             >
               Success!
@@ -107,9 +107,7 @@ const OptimizedRealWorldExamples = memo(function OptimizedRealWorldExamples({
       </div>
 
       <style jsx>{`
-        .example-button {
-          transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+        .example-button,
         .example-card,
         .example-card-content,
         .example-input-container,

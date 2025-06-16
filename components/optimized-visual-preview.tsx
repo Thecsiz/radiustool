@@ -2,6 +2,8 @@
 
 import type React from "react"
 import { memo, useMemo } from "react"
+import { Info } from "lucide-react"
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
 
 interface OptimizedVisualPreviewProps {
   borderRadius: number
@@ -29,196 +31,116 @@ const OptimizedVisualPreview = memo(function OptimizedVisualPreview({
   onMouseDown,
   isDragging,
 }: OptimizedVisualPreviewProps) {
-  // Memoize CSS custom properties to avoid recalculation
-  const cssVariables = useMemo(
-    () =>
-      ({
-        "--outer-radius": `${borderRadius}px`,
-        "--inner-radius": `${innerRadius}px`,
-        "--padding": `${padding}px`,
-        "--dimension": `${dimension}px`,
-        "--scale": isDragging ? "1.02" : "1",
-        "--tl-radius": `${cornerRadii.topLeft}px`,
-        "--tr-radius": `${cornerRadii.topRight}px`,
-        "--br-radius": `${cornerRadii.bottomRight}px`,
-        "--bl-radius": `${cornerRadii.bottomLeft}px`,
-        "--inner-tl": `${Math.max(0, cornerRadii.topLeft - padding)}px`,
-        "--inner-tr": `${Math.max(0, cornerRadii.topRight - padding)}px`,
-        "--inner-br": `${Math.max(0, cornerRadii.bottomRight - padding)}px`,
-        "--inner-bl": `${Math.max(0, cornerRadii.bottomLeft - padding)}px`,
-      }) as React.CSSProperties,
-    [
-      borderRadius,
-      innerRadius,
-      padding,
-      dimension,
-      isDragging,
-      cornerRadii.topLeft,
-      cornerRadii.topRight,
-      cornerRadii.bottomRight,
-      cornerRadii.bottomLeft,
-    ],
+  // Memoize styles for better performance
+  const containerStyles = useMemo(
+    () => ({
+      width: `${dimension}px`,
+      height: `${dimension}px`,
+      borderRadius: individualCorners
+        ? `${cornerRadii.topLeft}px ${cornerRadii.topRight}px ${cornerRadii.bottomRight}px ${cornerRadii.bottomLeft}px`
+        : `${borderRadius}px`,
+      padding: `${padding}px`,
+    }),
+    [dimension, borderRadius, padding, individualCorners, cornerRadii],
   )
 
-  const currentBorderRadius = useMemo(
-    () =>
-      individualCorners ? `var(--tl-radius) var(--tr-radius) var(--br-radius) var(--bl-radius)` : `var(--outer-radius)`,
-    [individualCorners],
+  const innerStyles = useMemo(
+    () => ({
+      borderRadius: individualCorners
+        ? `${Math.max(0, cornerRadii.topLeft - padding)}px ${Math.max(0, cornerRadii.topRight - padding)}px ${Math.max(0, cornerRadii.bottomRight - padding)}px ${Math.max(0, cornerRadii.bottomLeft - padding)}px`
+        : `${innerRadius}px`,
+    }),
+    [innerRadius, individualCorners, cornerRadii, padding],
   )
 
-  const innerBorderRadius = useMemo(
-    () =>
-      individualCorners ? `var(--inner-tl) var(--inner-tr) var(--inner-br) var(--inner-bl)` : `var(--inner-radius)`,
-    [individualCorners],
+  // Memoize corner indicator styles
+  const outerCornerStyle = useMemo(
+    () => ({
+      borderTopLeftRadius: individualCorners ? `${cornerRadii.topLeft}px` : `${borderRadius}px`,
+      width: `${Math.max(borderRadius * 2, 40)}px`,
+      height: `${Math.max(borderRadius * 2, 40)}px`,
+    }),
+    [borderRadius, individualCorners, cornerRadii.topLeft],
+  )
+
+  const innerCornerStyle = useMemo(
+    () => ({
+      borderTopLeftRadius: individualCorners ? `${Math.max(0, cornerRadii.topLeft - padding)}px` : `${innerRadius}px`,
+      width: `${Math.max(innerRadius * 2, 20)}px`,
+      height: `${Math.max(innerRadius * 2, 20)}px`,
+      left: `${padding}px`,
+      top: `${padding}px`,
+    }),
+    [innerRadius, individualCorners, cornerRadii.topLeft, padding],
   )
 
   return (
-    <div style={cssVariables}>
-      <figure
-        className="border-4 flex flex-col items-start border-neutral-300 relative cursor-pointer visual-container"
-        style={{
-          padding: `var(--padding)`,
-          borderRadius: currentBorderRadius,
-          width: `var(--dimension)`,
-          height: `var(--dimension)`,
-          transform: `scale(var(--scale))`,
-        }}
-        onMouseDown={(e) => onMouseDown(e, "radius")}
-      >
-        {/* Corner indicators - memoized */}
-        <CornerIndicators
-          individualCorners={individualCorners}
-          borderRadius={borderRadius}
-          cornerRadii={cornerRadii}
-          onMouseDown={onMouseDown}
-        />
-
-        <div
-          className="border-4 bg-blue-100 border-blue-300 flex justify-center items-center h-full w-full relative cursor-pointer inner-container"
-          style={{
-            borderRadius: innerBorderRadius,
-          }}
-          onMouseDown={(e) => {
-            e.stopPropagation()
-            onMouseDown(e, "padding")
-          }}
+    <TooltipProvider>
+      <div className="relative">
+        {/* Main Container */}
+        <figure
+          className={`
+          border-4 border-muted-foreground bg-background relative cursor-pointer transition-all duration-150
+          ${isDragging === "radius" ? "scale-105 shadow-lg" : ""}
+        `}
+          style={containerStyles}
+          onMouseDown={(e) => onMouseDown(e, "radius")}
         >
-          <p className="text-blue-500 font-bold select-none">{innerRadius}px</p>
+          {/* Outer corner radius indicator */}
+          <aside
+            className="border-t-4 border-l-4 border-green-500 absolute bg-transparent pointer-events-none transition-all duration-150"
+            style={{
+              ...outerCornerStyle,
+              top: "-4px",
+              left: "-4px",
+            }}
+          />
 
-          {/* Inner corner indicator */}
-          {innerRadius > 0 && !individualCorners && (
+          {/* Inner Container */}
+          <div
+            className={`
+            border-4 border-blue-500 bg-blue-100 dark:bg-blue-900/30 flex justify-center items-center h-full w-full cursor-pointer transition-all duration-150
+            ${isDragging === "padding" ? "scale-105" : ""}
+          `}
+            style={innerStyles}
+            onMouseDown={(e) => {
+              e.stopPropagation()
+              onMouseDown(e, "padding")
+            }}
+          >
+            <p className="text-blue-600 dark:text-blue-400 font-bold text-sm select-none">{innerRadius}px</p>
+          </div>
+
+          {/* Inner corner radius indicator */}
+          {innerRadius > 0 && (
             <aside
-              className="border-t-4 border-l-4 border-blue-500 absolute bg-transparent cursor-grab active:cursor-grabbing inner-indicator"
-              style={{
-                top: "-4px",
-                left: "-4px",
-                borderTopLeftRadius: `var(--inner-radius)`,
-                width: `calc(var(--inner-radius) * 2)`,
-                height: `calc(var(--inner-radius) * 2)`,
-              }}
-              onMouseDown={(e) => {
-                e.stopPropagation()
-                onMouseDown(e, "padding")
-              }}
+              className="border-t-4 border-l-4 border-blue-500 absolute bg-transparent pointer-events-none transition-all duration-150"
+              style={innerCornerStyle}
             />
           )}
+        </figure>
+
+        {/* Tooltip with drag instructions */}
+        <div className="mt-4 flex justify-center">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                className="p-2 rounded-full hover:bg-muted transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                aria-label="Interaction help"
+              >
+                <Info className="h-4 w-4 text-muted-foreground hover:text-foreground transition-colors" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" className="max-w-xs text-center" sideOffset={8}>
+              <div className="space-y-1 text-xs">
+                <p>Click and drag the outer area to adjust radius</p>
+                <p>Click and drag the inner area to adjust padding</p>
+              </div>
+            </TooltipContent>
+          </Tooltip>
         </div>
-      </figure>
-
-      <style jsx>{`
-        .visual-container {
-          transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .inner-container {
-          transition: border-radius 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .inner-indicator {
-          transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-      `}</style>
-    </div>
-  )
-})
-
-// Separate memoized component for corner indicators
-const CornerIndicators = memo(function CornerIndicators({
-  individualCorners,
-  borderRadius,
-  cornerRadii,
-  onMouseDown,
-}: {
-  individualCorners: boolean
-  borderRadius: number
-  cornerRadii: any
-  onMouseDown: (e: React.MouseEvent, type: "radius" | "padding") => void
-}) {
-  if (!individualCorners) {
-    return (
-      <aside
-        className="border-t-4 border-l-4 border-green-500 absolute bg-transparent cursor-grab active:cursor-grabbing corner-indicator"
-        style={{
-          top: "-4px",
-          left: "-4px",
-          borderTopLeftRadius: `var(--outer-radius)`,
-          width: `calc(var(--outer-radius) * 2)`,
-          height: `calc(var(--outer-radius) * 2)`,
-        }}
-        onMouseDown={(e) => {
-          e.stopPropagation()
-          onMouseDown(e, "radius")
-        }}
-      />
-    )
-  }
-
-  return (
-    <>
-      <aside
-        className="border-t-4 border-l-4 border-green-500 absolute bg-transparent corner-indicator"
-        style={{
-          top: "-4px",
-          left: "-4px",
-          borderTopLeftRadius: `var(--tl-radius)`,
-          width: `calc(var(--tl-radius) * 2)`,
-          height: `calc(var(--tl-radius) * 2)`,
-        }}
-      />
-      <aside
-        className="border-t-4 border-r-4 border-green-500 absolute bg-transparent corner-indicator"
-        style={{
-          top: "-4px",
-          right: "-4px",
-          borderTopRightRadius: `var(--tr-radius)`,
-          width: `calc(var(--tr-radius) * 2)`,
-          height: `calc(var(--tr-radius) * 2)`,
-        }}
-      />
-      <aside
-        className="border-b-4 border-r-4 border-green-500 absolute bg-transparent corner-indicator"
-        style={{
-          bottom: "-4px",
-          right: "-4px",
-          borderBottomRightRadius: `var(--br-radius)`,
-          width: `calc(var(--br-radius) * 2)`,
-          height: `calc(var(--br-radius) * 2)`,
-        }}
-      />
-      <aside
-        className="border-b-4 border-l-4 border-green-500 absolute bg-transparent corner-indicator"
-        style={{
-          bottom: "-4px",
-          left: "-4px",
-          borderBottomLeftRadius: `var(--bl-radius)`,
-          width: `calc(var(--bl-radius) * 2)`,
-          height: `calc(var(--bl-radius) * 2)`,
-        }}
-      />
-      <style jsx>{`
-        .corner-indicator {
-          transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-      `}</style>
-    </>
+      </div>
+    </TooltipProvider>
   )
 })
 

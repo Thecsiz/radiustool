@@ -72,32 +72,6 @@ export const DESIGN_PRESETS: PresetConfig[] = [
     description: "Bottom sheet",
     category: "Material",
   },
-
-  // Modern Web
-  {
-    name: "Subtle Button",
-    borderRadius: 6,
-    padding: 12,
-    dimension: 180,
-    description: "Modern subtle button",
-    category: "Web",
-  },
-  {
-    name: "Dashboard Card",
-    borderRadius: 12,
-    padding: 20,
-    dimension: 180,
-    description: "Dashboard component",
-    category: "Web",
-  },
-  {
-    name: "Hero Section",
-    borderRadius: 24,
-    padding: 48,
-    dimension: 180,
-    description: "Large hero container",
-    category: "Web",
-  },
 ]
 
 interface DesignSystemPresetsProps {
@@ -112,18 +86,18 @@ export function DesignSystemPresets({ onApplyPreset }: DesignSystemPresetsProps)
       <h3 className="font-semibold text-sm">Design System Presets</h3>
       {categories.map((category) => (
         <div key={category} className="space-y-2">
-          <h4 className="text-xs font-medium text-gray-600 uppercase tracking-wide">{category}</h4>
+          <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{category}</h4>
           <div className="grid grid-cols-2 gap-2">
             {DESIGN_PRESETS.filter((p) => p.category === category).map((preset) => (
               <Button
                 key={preset.name}
                 variant="outline"
                 size="sm"
-                className="h-auto p-2 text-left flex flex-col items-start"
+                className="h-auto p-2 text-left flex flex-col items-start hover:bg-accent hover:text-accent-foreground"
                 onClick={() => onApplyPreset(preset)}
               >
                 <span className="font-medium text-xs">{preset.name}</span>
-                <span className="text-xs text-gray-500">{preset.borderRadius}px radius</span>
+                <span className="text-xs text-muted-foreground">{preset.borderRadius}px radius</span>
               </Button>
             ))}
           </div>

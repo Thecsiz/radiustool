@@ -1,7 +1,9 @@
 "use client"
 
-import { Card } from "@/components/ui/card"
-import { AlertCircle, CheckCircle, XCircle } from "lucide-react"
+import { memo } from "react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { CheckCircle, XCircle, Info } from "lucide-react"
 
 interface EducationalSectionProps {
   borderRadius: number
@@ -9,101 +11,121 @@ interface EducationalSectionProps {
   innerRadius: number
 }
 
-export function EducationalSection({ borderRadius, padding, innerRadius }: EducationalSectionProps) {
-  const wrongInnerRadius = borderRadius // Common mistake: using same radius
-  const correctInnerRadius = innerRadius
+const EducationalSection = memo(function EducationalSection({
+  borderRadius,
+  padding,
+  innerRadius,
+}: EducationalSectionProps) {
+  const isOptimal = innerRadius > 0 && innerRadius >= borderRadius * 0.3
 
   return (
-    <div className="space-y-4">
-      <h3 className="font-semibold text-sm flex items-center gap-2">
-        <AlertCircle className="w-4 h-4" />
-        Why Apple's Formula Works
-      </h3>
-
-      <Card className="p-4 space-y-4">
-        <div className="text-sm text-gray-700">
-          <p className="mb-3">
-            Apple's Human Interface Guidelines use the formula:{" "}
-            <code className="bg-gray-100 px-1 rounded">inner = outer - padding</code>
-          </p>
-          <p className="text-xs text-gray-600">
-            This maintains visual consistency by ensuring the inner element doesn't appear to "float" within its
-            container.
-          </p>
-        </div>
-
-        {/* Visual Comparison */}
-        <div className="grid grid-cols-2 gap-4">
-          {/* Wrong Way */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <XCircle className="w-4 h-4 text-red-500" />
-              <span className="text-sm font-medium text-red-700">Wrong</span>
-            </div>
-            <div
-              className="bg-gray-200 border-2 border-gray-400 relative"
-              style={{
-                width: "80px",
-                height: "80px",
-                borderRadius: `${borderRadius}px`,
-                padding: `${Math.min(padding, 16)}px`,
-              }}
-            >
-              <div
-                className="bg-red-100 border-2 border-red-300 w-full h-full flex items-center justify-center"
-                style={{ borderRadius: `${wrongInnerRadius}px` }}
-              >
-                <span className="text-xs text-red-600">Floats</span>
+    <div className="space-y-6">
+      <div>
+        <h3 className="font-semibold text-sm mb-4">Apple's Border Radius Formula</h3>
+        <Card className="border-border">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Inner Radius = Outer Radius - Padding</CardTitle>
+            <CardDescription>
+              This formula ensures visual harmony and prevents the "floating" effect in nested elements.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="bg-muted p-4 rounded-lg border">
+              <div className="font-mono text-sm">
+                <div className="text-muted-foreground">Current calculation:</div>
+                <div className="mt-1">
+                  <span className="text-blue-500">{innerRadius}px</span> ={" "}
+                  <span className="text-green-500">{borderRadius}px</span> -{" "}
+                  <span className="text-muted-foreground">{padding}px</span>
+                </div>
               </div>
             </div>
-            <p className="text-xs text-gray-600">Inner radius = {wrongInnerRadius}px</p>
-          </div>
 
-          {/* Right Way */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <CheckCircle className="w-4 h-4 text-green-500" />
-              <span className="text-sm font-medium text-green-700">Correct</span>
-            </div>
-            <div
-              className="bg-gray-200 border-2 border-gray-400 relative"
-              style={{
-                width: "80px",
-                height: "80px",
-                borderRadius: `${borderRadius}px`,
-                padding: `${Math.min(padding, 16)}px`,
-              }}
+            <Alert
+              className={`border-2 ${isOptimal ? "border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/30" : "border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-950/30"}`}
             >
-              <div
-                className="bg-green-100 border-2 border-green-300 w-full h-full flex items-center justify-center"
-                style={{ borderRadius: `${correctInnerRadius}px` }}
+              {isOptimal ? (
+                <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+              ) : (
+                <Info className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+              )}
+              <AlertDescription
+                className={isOptimal ? "text-green-800 dark:text-green-200" : "text-yellow-800 dark:text-yellow-200"}
               >
-                <span className="text-xs text-green-600">Perfect</span>
-              </div>
-            </div>
-            <p className="text-xs text-gray-600">Inner radius = {correctInnerRadius}px</p>
-          </div>
-        </div>
+                {isOptimal
+                  ? "Perfect! Your border radius follows Apple's guidelines for optimal visual harmony."
+                  : innerRadius === 0
+                    ? "The inner radius is 0. Consider reducing padding or increasing the outer radius for better visual balance."
+                    : "The inner radius is quite small. Consider adjusting the ratio for better visual balance."}
+              </AlertDescription>
+            </Alert>
+          </CardContent>
+        </Card>
+      </div>
 
-        {/* Formula Breakdown */}
-        <div className="bg-blue-50 p-3 rounded-lg">
-          <h4 className="text-sm font-medium mb-2">Formula Breakdown:</h4>
-          <div className="text-sm font-mono space-y-1">
+      <div>
+        <h3 className="font-semibold text-sm mb-4">Why This Works</h3>
+        <div className="grid gap-4">
+          <Card className="border-border">
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="h-5 w-5 text-green-500" />
+                <CardTitle className="text-sm">Correct Approach</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <CardDescription className="text-sm">
+                Using the formula creates a natural, continuous curve that feels intentional and harmonious. The inner
+                element appears properly nested within its container.
+              </CardDescription>
+            </CardContent>
+          </Card>
+
+          <Card className="border-border">
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-2">
+                <XCircle className="h-5 w-5 text-red-500" />
+                <CardTitle className="text-sm">Common Mistake</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <CardDescription className="text-sm">
+                Using the same radius for both containers creates a "floating" effect where the inner element appears to
+                be cut out rather than naturally nested.
+              </CardDescription>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      <div>
+        <h3 className="font-semibold text-sm mb-4">Design Guidelines</h3>
+        <div className="space-y-3 text-sm text-muted-foreground">
+          <div className="flex items-start gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
             <div>
-              Outer radius: <span className="text-green-600">{borderRadius}px</span>
+              <strong className="text-foreground">Minimum inner radius:</strong> Aim for at least 30% of the outer
+              radius for optimal visual balance.
             </div>
+          </div>
+          <div className="flex items-start gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
             <div>
-              Padding: <span className="text-gray-600">{padding}px</span>
+              <strong className="text-foreground">Consistent application:</strong> Apply this formula consistently
+              across your design system for cohesive user interfaces.
             </div>
-            <div className="border-t pt-1">
-              Inner radius:{" "}
-              <span className="text-blue-600">
-                {borderRadius} - {padding} = {correctInnerRadius}px
-              </span>
+          </div>
+          <div className="flex items-start gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+            <div>
+              <strong className="text-foreground">Platform consideration:</strong> This approach is used by Apple,
+              Google, and other major design systems.
             </div>
           </div>
         </div>
-      </Card>
+      </div>
     </div>
   )
-}
+})
+
+export { EducationalSection }
